@@ -11,8 +11,14 @@ permissions:
 
 jobs:
   validate:
-    name: Typecheck, test, build, and pack
-    runs-on: ubuntu-latest
+    name: Validate (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 15
 
     steps:

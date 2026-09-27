@@ -103,6 +103,17 @@ Userscripts run with the browser-side permissions of the current DSH page. They 
 
 Host management and script routes pass through the DSH Connection request fence, but an authorized userscript still has the browser privileges described above.
 
+## Recovery
+
+If a userscript prevents the DSH Web GUI from working:
+
+1. Stop the active DSH process.
+2. Open `$DSH_HOME/custom-js/` (normally `~/.dsh/custom-js/`).
+3. Rename the offending file, for example from `outline.js` to `outline.js.disabled`.
+4. Start DSH again and refresh the browser page.
+
+Only top-level `.js`, `.mjs`, and `.ts` files are loaded, so the renamed file is ignored while its contents remain available for inspection and repair. If you configured a different `scriptDirectory`, use that directory instead.
+
 ## Script directory
 
 Default:
@@ -229,12 +240,14 @@ The Client entry should include `locale` in its Cordis `inject` list and call `i
 Verified automatically:
 
 - TypeScript type checking
-- 15 unit tests across compiler, Host manager, Client manager, and Settings behavior
+- Automated compiler, Host manager, Client manager, Settings, and HTTP route tests
 - Production Host and Client builds
 - npm package content inspection with `npm pack --dry-run`
 
 Manually verified on **Windows 11 with DSH 0.1.7-rc.2**:
 
+- Installation from the packed `.tgz` into an isolated `web` profile
+- DSH startup plus manifest, TypeScript create/compile/serve, disable, and delete smoke checks
 - Script creation and editing
 - Hot reload
 - TypeScript diagnostics

@@ -29,9 +29,8 @@ function runPnpm(args) {
   }
 }
 
-// Rebuild first: the tarball ships `lib/`, so a stale build must never be packed.
-runPnpm(['run', 'build'])
-
+// `pnpm pack` runs the package's `prepack` hook, which performs the clean build.
+// Do not build separately here: the candidate should contain that one prepack build.
 mkdirSync(outDir, { recursive: true })
 runPnpm(['pack', '--pack-destination', outDir])
 

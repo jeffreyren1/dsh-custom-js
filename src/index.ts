@@ -100,6 +100,19 @@ function badRequest(res: ServerResponse, error: string): void {
   json(res, 400, { ok: false, error })
 }
 
+function managementError(error: unknown): { readonly status: number; readonly code: string } | undefined {
+  if (!(error instanceof Error)) return undefined
+  if (error.message.startsWith('script not found:')) return { status: 404, code: 'not-found' }
+  if (error.message.startsWith('script already exists:')) return { status: 409, code: 'already-exists' }
+  if (error.message.startsWith('symbolic links are not editable:')) {
+    return { status: 400, code: 'symbolic-link-not-allowed' }
+  }
+  if (error.message.startsWith('invalid script name:') || error.message.startsWith('invalid script path:')) {
+    return { status: 400, code: 'bad-name' }
+  }
+  return undefined
+}
+
 function guarded(
   ctx: Context,
   handler: (req: IncomingMessage, res: ServerResponse) => void | Promise<void>,
@@ -129,7 +142,7 @@ function guarded(
       await handler(req, res)
     } catch (error) {
       ctx.logger.error(`[${PLUGIN_ID}] route failed`, error)
-      if (!res.headersSent) json(res, 500, { ok: false, error: String(error) })
+      if (!res.headersSent) json(res, 500, { ok: false, error: 'internal-error' })
       else res.end()
     }
   }
@@ -319,9 +332,13 @@ export function apply(ctx: Context, config: Config = {}): void {
           })
           return
         }
-        const message = error instanceof Error ? error.message : String(error)
-        const status = message.includes('not found') ? 404 : message.includes('already exists') ? 409 : 400
-        json(res, status, { ok: false, error: message })
+        const mapped = managementError(error)
+        if (mapped !== undefined) {
+          json(res, mapped.status, { ok: false, error: mapped.code })
+          return
+        }
+        ctx.logger.error(`[${PLUGIN_ID}] management operation failed`, error)
+        json(res, 500, { ok: false, error: 'internal-error' })
       }
     }),
   }), `${PLUGIN_ID}: script management route`)

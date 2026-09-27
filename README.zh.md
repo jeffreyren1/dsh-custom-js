@@ -103,6 +103,17 @@ console.log('Hello from dsh-custom-js')
 
 Host 管理接口和脚本接口经过 DSH Connection request fence；通过检查的用户脚本仍拥有上述浏览器权限。
 
+## 故障恢复
+
+如果某个用户脚本导致 DSH Web GUI 无法正常工作：
+
+1. 停止当前 DSH 进程。
+2. 打开 `$DSH_HOME/custom-js/`（通常为 `~/.dsh/custom-js/`）。
+3. 重命名问题脚本，例如将 `outline.js` 改为 `outline.js.disabled`。
+4. 重新启动 DSH，然后刷新浏览器页面。
+
+插件只加载目录顶层的 `.js`、`.mjs` 和 `.ts` 文件，因此重命名后的文件不会执行，同时其内容仍可用于检查和修复。如果配置了其他 `scriptDirectory`，请改用对应目录。
+
 ## 脚本目录
 
 默认目录：
@@ -229,12 +240,14 @@ Client 入口需要在 Cordis `inject` 中包含 `locale`，并在 `apply(ctx)` 
 已通过自动检查验证：
 
 - TypeScript 类型检查
-- 编译器、Host manager、Client manager 和设置行为共 15 个单元测试
+- 编译器、Host manager、Client manager、设置行为和 HTTP 路由自动化测试
 - Host 与 Client 的生产构建
 - 使用 `npm pack --dry-run` 检查 npm 发布包内容
 
 已在 **Windows 11 + DSH 0.1.7-rc.2** 环境中手动验证：
 
+- 将打包后的 `.tgz` 安装到隔离的 `web` profile
+- DSH 启动以及 manifest、TypeScript 创建/编译/提供、禁用和删除烟雾检查
 - 创建和编辑脚本
 - 自动重新加载
 - TypeScript 诊断
