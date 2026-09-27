@@ -1,0 +1,156 @@
+{
+  "name": "dsh-custom-js",
+  "version": "0.2.0",
+  "description": "Load, edit, manage and hot-reload trusted JavaScript and TypeScript userscripts in DeepSeek Harness.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeffreyren1/dsh-custom-js.git"
+  },
+  "homepage": "https://github.com/jeffreyren1/dsh-custom-js#readme",
+  "bugs": {
+    "url": "https://github.com/jeffreyren1/dsh-custom-js/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "cordis",
+    "custom-js",
+    "userscript",
+    "javascript",
+    "typescript"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-settings-general"
+      ]
+    },
+    "catalog": {
+      "category": "ui",
+      "summary": {
+        "en": "Load, edit, manage, and hot-reload trusted JavaScript and TypeScript userscripts in DeepSeek Harness.",
+        "zh": "在 DeepSeek Harness 中加载、编辑、管理和热重载可信的 JavaScript / TypeScript 用户脚本。"
+      },
+      "capabilities": [
+        "fs",
+        "process:spawn",
+        "net:loopback",
+        "settings",
+        "web"
+      ]
+    },
+    "compatibility": {
+      "dsh": "0.1.7-rc.2",
+      "profiles": [
+        "web"
+      ]
+    }
+  },
+  "dshWorkshop": {
+    "schema": "omdsh-workshop-package/v1",
+    "type": "plugin",
+    "integration": {
+      "protocol": "harness-cordis",
+      "artifact": "cordis.patch.yml"
+    },
+    "lifecycle": {
+      "activation": "hot-reload",
+      "dispose": "supported"
+    },
+    "permissions": [
+      "fs:read",
+      "fs:write",
+      "process:spawn",
+      "net:loopback"
+    ],
+    "compatibility": {
+      "dshVersions": [
+        "0.1.7-rc.2"
+      ]
+    }
+  },
+  "files": [
+    "lib/**/*.js",
+    "lib/**/*.js.map",
+    "lib/**/*.d.ts",
+    "lib/**/*.d.ts.map",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "screenshots.json",
+    "assets/screenshot.png",
+    "assets/screenshot-2.png",
+    "assets/screenshot-3.png",
+    "LICENSE"
+  ],
+  "scripts": {
+    "prebuild": "node -e \"require('fs').rmSync('lib',{recursive:true,force:true})\"",
+    "build": "tsc -p tsconfig.json && tsdown",
+    "bundle": "tsdown",
+    "pack:tgz": "node scripts/pack-tgz.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run typecheck && npm test",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "~3.18.4",
+    "typescript": "~5.7.2"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.4",
+    "@deepseek-ai/dsh-client-locale": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-client-ui-settings": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-client-ui-settings-general": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-client-ui-slots": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-host-webserver": "0.1.7-rc.2",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "~4.0.4",
+    "@deepseek-ai/dsh-client-locale": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-client-ui-settings": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-client-ui-settings-general": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-client-ui-slots": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-host-webserver": "0.1.7-rc.2",
+    "@types/node": "^22.20.0",
+    "@types/react": "~18.3.1",
+    "happy-dom": "^17.6.3",
+    "react": "^18.3.1",
+    "tsdown": "0.22.2",
+    "vitest": "^3.0.0"
+  }
+}

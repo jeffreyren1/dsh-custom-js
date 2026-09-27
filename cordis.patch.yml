@@ -1,0 +1,3 @@
+- insert:
+    - id: custom-js
+      name: 'dsh-custom-js'

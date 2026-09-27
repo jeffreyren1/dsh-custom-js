@@ -1,0 +1,294 @@
+# dsh-custom-js
+
+<p align="center"><strong>为 DeepSeek Harness 加载和管理自己的 JavaScript / TypeScript 用户脚本。</strong></p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/dsh-custom-js"><img src="https://img.shields.io/npm/v/dsh-custom-js.svg" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/dsh-custom-js"><img src="https://img.shields.io/npm/dm/dsh-custom-js.svg" alt="npm downloads"></a>
+  <a href="https://github.com/jeffreyren1/dsh-custom-js/actions/workflows/ci.yml"><img src="https://github.com/jeffreyren1/dsh-custom-js/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/jeffreyren1/dsh-custom-js"><img src="https://img.shields.io/github/stars/jeffreyren1/dsh-custom-js?style=flat" alt="GitHub stars"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
+</p>
+
+<p align="center"><a href="README.md">English</a> | <strong>中文</strong></p>
+
+![dsh-custom-js 脚本管理器](./assets/screenshot.png)
+
+`dsh-custom-js` 会把可信的 `.js`、`.mjs` 和 `.ts` 用户脚本加载到 DeepSeek Harness Web GUI 中。插件提供内置脚本管理器、自动重新加载、逐脚本启用/禁用、生命周期 cleanup、TypeScript 转译、运行状态，以及基于 DSH 原生 locale 服务的中英文界面。
+
+插件保持通用，不内置 Settings 窗口形态、Sidebar 按钮、快捷键或页面行为修改。这些具体功能由你自己的用户脚本实现。
+
+## 安装
+
+```bash
+dsh plugin --profile <profile> add dsh-custom-js
+```
+
+例如：
+
+```bash
+dsh plugin --profile web add dsh-custom-js
+```
+
+首次安装后重启 DSH，然后打开 **设置 → 通用设置 → 自定义 JavaScript / TypeScript**。
+
+当前包声明兼容 **DSH 0.1.7-rc.2**，适用于基于 `web` 模板的 profile。
+
+## 更新
+
+```bash
+dsh plugin --profile web update dsh-custom-js
+```
+
+更新完成后重启当前 DSH 进程，然后刷新浏览器页面。
+
+## 卸载
+
+```bash
+dsh plugin --profile web remove dsh-custom-js
+```
+
+移除插件后请重启当前 DSH 进程。卸载插件不会删除 `$DSH_HOME/custom-js/` 及其中保存的用户脚本。只有在确认不再需要这些内容时，才手动删除该目录。
+
+## 快速开始
+
+打开 **设置 → 通用设置 → 自定义 JavaScript / TypeScript**，创建 `hello.js` 并粘贴：
+
+```js
+console.log('Hello from dsh-custom-js')
+```
+
+保存脚本。启用自动重新加载时，Host 会检测变化，Client 会立即加载脚本。
+
+你也可以使用自己喜欢的编辑器，直接在 `$DSH_HOME/custom-js/hello.js` 创建同样的文件。
+
+## 可以用它做什么
+
+可以使用用户脚本调整 DSH Web GUI、增加快捷键和辅助控件、保存长期使用的调试工具，或者维护自己的小型界面扩展，同时避免直接修改 DSH 安装文件。
+
+## 更多截图
+
+### 内置编辑器中的查找
+
+无需离开 DSH 设置页面，即可查找代码。
+
+![在 dsh-custom-js 编辑器中查找代码](./assets/screenshot-2.png)
+
+### 使用自己的脚本扩展 DSH 功能
+
+这个大纲视图由用户自己编写的 JavaScript 文件实现，并通过 `dsh-custom-js` 加载。
+
+![使用自定义 JavaScript 用户脚本实现的大纲功能](./assets/screenshot-3.png)
+
+## 功能
+
+- JavaScript、MJS、TypeScript 用户脚本
+- 内置脚本编辑器
+- `Ctrl/Cmd+S`、Tab 缩进、查找、代码大纲跳转
+- 导入、导出、删除、启用/禁用、手动重新加载
+- 文件 watcher 与低频轮询，兼容外部编辑器保存方式
+- TypeScript ES2022 Module 转译与编译错误定位
+- `default` / `apply` / `init` 生命周期与 cleanup
+- revision 并发保护，避免覆盖外部编辑的新内容
+- 逐脚本运行状态
+- `window.dshCustomJs` 浏览器 API
+- 通过 `@deepseek-ai/dsh-client-locale` 提供中英文界面
+
+## 安全警告
+
+> [!WARNING]
+> **这里只应放入你自己编写或完全信任的代码。**
+
+用户脚本与当前 DSH 页面拥有相同的浏览器侧权限，可以读取和修改页面 DOM、读写 `localStorage` / `sessionStorage`、读取页面中浏览器可见的数据，并通过 `fetch`、`WebSocket` 等 API 发起网络请求。`dsh-custom-js` 不提供用户脚本沙箱。
+
+Host 管理接口和脚本接口经过 DSH Connection request fence；通过检查的用户脚本仍拥有上述浏览器权限。
+
+## 脚本目录
+
+默认目录：
+
+```text
+$DSH_HOME/custom-js/
+```
+
+如果没有设置 `DSH_HOME`，Host 使用 `~/.dsh/custom-js/`。目录会在插件启动时自动创建。
+
+```text
+custom-js/
+├─ base.ts
+├─ sidebar.js
+├─ settings-window.js
+└─ shortcuts.mjs
+```
+
+只扫描目录顶层的 `.js`、`.mjs`、`.ts` 文件。子目录和其他扩展名会被忽略。`scriptDirectory` 相对于 `$DSH_HOME`，绝对路径和通过 `..` 逃出 `$DSH_HOME` 的路径会被拒绝。
+
+## 脚本管理器
+
+打开 **设置 → 通用设置 → 自定义 JavaScript / TypeScript**。
+
+管理器提供脚本选择、JS/TS 类型和文件大小信息、新建脚本、使用系统默认程序打开文件、导入导出、删除确认、内置编辑器、查找、代码大纲跳转、逐脚本启用/禁用、手动重新加载、TypeScript 编译错误、运行状态以及 revision 冲突保护。
+
+编辑器使用显式保存，避免输入尚未完成的 JavaScript 时立即执行。外部文件变化仍会触发重新加载；如果当前编辑器存在未保存内容，会保留本地编辑，直到保存或放弃更改。
+
+逐脚本开关保存在脚本目录中的 `.dsh-custom-js.json`，DSH 重启后继续生效。
+
+## 插件设置
+
+| 设置 | 默认值 | 作用 |
+|---|---:|---|
+| `enabled` | `true` | 总开关；关闭后清理并卸载全部用户脚本 |
+| `autoReload` | `true` | 监听文件变化并通知 Client |
+| `scriptDirectory` | `custom-js` | 相对于 `$DSH_HOME` 的目录 |
+| `scripts` | `[]` | 优先加载顺序 |
+| `scriptStates` | `[]` | 初始逐脚本启用状态 |
+| `devLogs` | `false` | 输出详细 Host / Client 加载日志 |
+
+`scripts` 中列出的文件优先按声明顺序加载；其余文件按照 Unicode 文件名稳定升序加载。重复项和不存在的文件会被忽略。没有出现在 `scriptStates` 中的脚本默认启用。
+
+## 普通脚本
+
+文件按浏览器 ES Module 加载，不要求导出函数：
+
+```js
+console.log('custom js loaded')
+
+document.addEventListener('click', event => {
+  console.log(event.target)
+})
+```
+
+`.js` 和 `.mjs` 内容由 Host 原样返回。浏览器模块不能使用 `node:fs`、`node:path`、`node:child_process` 等 Node.js API。
+
+## 可管理生命周期
+
+推荐导出默认初始化函数，并返回 cleanup：
+
+```ts
+export default function apply(context) {
+  const handler = () => console.log('click', context.name)
+  document.addEventListener('click', handler)
+
+  return () => {
+    document.removeEventListener('click', handler)
+  }
+}
+```
+
+也支持命名导出 `apply` 或 `init`，以及单独的 `cleanup`。初始化优先级为 `default` → `apply` → `init`。脚本重新加载、禁用、删除或插件卸载时会执行 cleanup。整体卸载多个脚本时按照加载顺序的逆序执行 cleanup。
+
+## TypeScript
+
+Host 使用官方 `typescript` 编译器把 `.ts` 转译为浏览器 ES2022 Module，并保留内联 source map。编译错误会写入 manifest，包括文件名、从 1 开始的行号和列号、TypeScript 错误码和消息。单个 TypeScript 文件编译失败不会阻止其他脚本加载。
+
+这里执行单文件转译。如果需要项目级严格类型检查，应在脚本自己的工程中运行 `tsc --noEmit`。
+
+## 浏览器 API
+
+```ts
+window.dshCustomJs.version
+window.dshCustomJs.scripts
+window.dshCustomJs.getStatus('sidebar.ts')
+await window.dshCustomJs.reload('sidebar.ts')
+await window.dshCustomJs.reload()
+```
+
+运行状态包括 `disabled`、`compile-error`、`loading`、`loaded`、`error`、`unloaded`。
+
+## Host 接口
+
+```text
+GET  /api/custom-js/manifest
+GET  /api/custom-js/scripts/<script>
+GET  /api/custom-js/events
+GET  /api/custom-js/manage/read?name=<script>
+POST /api/custom-js/manage/write
+POST /api/custom-js/manage/create
+POST /api/custom-js/manage/toggle
+POST /api/custom-js/manage/delete
+POST /api/custom-js/manage/open
+```
+
+管理接口和脚本接口共用 DSH Connection request fence。脚本名称必须是单层 `.js`、`.mjs` 或 `.ts` 文件名；目录穿越和符号链接会被拒绝。编辑请求体上限为 2 MiB，写入使用 revision 前置条件。
+
+## 中英文界面
+
+DSH 自带 Client locale 服务。`dsh-custom-js` 按照官方 API 注册完整的 `zh` 和 `en` 双语词典，命名空间为 `settings.custom-js`。通过 slot 注册 UI 时设置 `locale: 'settings.custom-js'`，组件使用标准 `t` 文案入口后，用户切换 DSH 语言时界面会自动更新，无需重新加载。
+
+相关文件：
+
+```text
+src/client/locales.ts
+src/client/i18n.ts
+```
+
+Client 入口需要在 Cordis `inject` 中包含 `locale`，并在 `apply(ctx)` 中调用 `installCustomJsLocale(ctx)`。
+
+## 验证情况
+
+已通过自动检查验证：
+
+- TypeScript 类型检查
+- 编译器、Host manager、Client manager 和设置行为共 15 个单元测试
+- Host 与 Client 的生产构建
+- 使用 `npm pack --dry-run` 检查 npm 发布包内容
+
+已在 **Windows 11 + DSH 0.1.7-rc.2** 环境中手动验证：
+
+- 创建和编辑脚本
+- 自动重新加载
+- TypeScript 诊断
+- 外部编辑器更新
+
+目前尚未验证：
+
+- macOS
+- Linux 桌面环境下使用默认程序打开文件
+- `0.1.7-rc.2` 之外的 DSH 版本
+
+## 开发
+
+```bash
+pnpm install
+pnpm typecheck
+pnpm test
+pnpm build
+```
+
+## 发布
+
+发布前检查：
+
+```bash
+pnpm typecheck
+pnpm test
+npm pack --dry-run
+```
+
+发布：
+
+```bash
+npm publish
+```
+
+`prepublishOnly` 会执行类型检查和测试，`prepack` 会重新构建 `lib`。
+
+## 贡献与支持
+
+- 遇到问题或有新想法？请[提交 Issue](https://github.com/jeffreyren1/dsh-custom-js/issues)。
+- 希望参与贡献？请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
+- 如需私下报告安全漏洞，请遵循 [SECURITY.md](SECURITY.md)。
+- 版本变更记录见 [CHANGELOG.md](CHANGELOG.md)。
+
+如果这个插件对你有帮助，欢迎为仓库点 Star，这会帮助更多 DSH 用户发现它。
+
+## License
+
+[MIT](LICENSE)
+
+## 链接
+
+- GitHub: https://github.com/jeffreyren1/dsh-custom-js
+- Issues: https://github.com/jeffreyren1/dsh-custom-js/issues
+- npm: https://www.npmjs.com/package/dsh-custom-js
+- DeepSeek Harness: https://github.com/deepseek-ai/deepseek-harness
