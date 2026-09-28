@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and releases use [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.4.0] - 2026-09-28
+
+### Changed
+
+- Raised the integration baseline to DSH `0.2.0-rc.1` and rebuilt against the matching locale, Settings, slots, and Host webserver APIs.
+- Declared all DSH-owned peer dependencies as `>=0.2.0-rc.1 <0.3.0-0`, covering later `0.2.x` prerelease and stable runtimes while deliberately excluding `0.3.x` prereleases.
+- Updated package catalog, Workshop, documentation, contributor guidance, issue templates, and runtime version metadata for `dsh-custom-js` 0.4.0.
+
+### Fixed
+
+- DSH 0.2 no longer blocks the plugin as version-incompatible, so its Host and Client components can be discovered and loaded normally without a compatibility exemption.
 
 ## [0.3.2] - 2026-09-28
 
@@ -67,7 +77,7 @@ All notable changes to this project will be documented in this file. The format 
 - Path validation, symbolic-link rejection, request-size limits, revision preconditions, and DSH Connection request fencing for management routes.
 - Stable public management error codes keep local paths and unexpected internal exceptions out of browser responses.
 
-[Unreleased]: https://github.com/jeffreyren1/dsh-custom-js/compare/v0.3.2...HEAD
+[0.4.0]: https://github.com/jeffreyren1/dsh-custom-js/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/jeffreyren1/dsh-custom-js/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/jeffreyren1/dsh-custom-js/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/jeffreyren1/dsh-custom-js/compare/v0.2.0...v0.3.0

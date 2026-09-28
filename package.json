@@ -1,7 +1,8 @@
 {
   "name": "dsh-custom-js",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Load, edit, manage and hot-reload trusted JavaScript and TypeScript userscripts in DeepSeek Harness.",
+  "icon": "./assets/icon.svg",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -72,7 +73,7 @@
       ]
     },
     "compatibility": {
-      "dsh": "0.1.7-rc.2",
+      "dsh": ">=0.2.0-rc.1 <0.3.0-0",
       "profiles": [
         "web"
       ]
@@ -97,7 +98,7 @@
     ],
     "compatibility": {
       "dshVersions": [
-        "0.1.7-rc.2"
+        ">=0.2.0-rc.1 <0.3.0-0"
       ]
     }
   },
@@ -118,6 +119,7 @@
     "assets/screenshot-3.png",
     "assets/screenshot-4.png",
     "assets/social-preview.png",
+    "assets/icon.svg",
     "LICENSE"
   ],
   "scripts": {
@@ -137,11 +139,11 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "~4.0.4",
-    "@deepseek-ai/dsh-client-locale": "0.1.7-rc.2",
-    "@deepseek-ai/dsh-client-ui-settings": "0.1.7-rc.2",
-    "@deepseek-ai/dsh-client-ui-settings-general": "0.1.7-rc.2",
-    "@deepseek-ai/dsh-client-ui-slots": "0.1.7-rc.2",
-    "@deepseek-ai/dsh-host-webserver": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-client-locale": ">=0.2.0-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-client-ui-settings": ">=0.2.0-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-client-ui-settings-general": ">=0.2.0-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-client-ui-slots": ">=0.2.0-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-host-webserver": ">=0.2.0-rc.1 <0.3.0-0",
     "react": "^18.2.0"
   },
   "devDependencies": {
@@ -151,11 +153,11 @@
     "@codemirror/state": "^6.7.6",
     "@codemirror/view": "^6.43.13",
     "@deepseek-ai/cordis": "~4.0.4",
-    "@deepseek-ai/dsh-client-locale": "0.1.7-rc.2",
-    "@deepseek-ai/dsh-client-ui-settings": "0.1.7-rc.2",
-    "@deepseek-ai/dsh-client-ui-settings-general": "0.1.7-rc.2",
-    "@deepseek-ai/dsh-client-ui-slots": "0.1.7-rc.2",
-    "@deepseek-ai/dsh-host-webserver": "0.1.7-rc.2",
+    "@deepseek-ai/dsh-client-locale": "0.2.0-rc.1",
+    "@deepseek-ai/dsh-client-ui-settings": "0.2.0-rc.1",
+    "@deepseek-ai/dsh-client-ui-settings-general": "0.2.0-rc.1",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.0-rc.1",
+    "@deepseek-ai/dsh-host-webserver": "0.2.0-rc.1",
     "@lezer/highlight": "^1.2.4",
     "@types/node": "^22.20.0",
     "@types/react": "~18.3.1",

@@ -1,7 +1,8 @@
-# dsh-custom-js
+<p align="center">
+  <img src="./assets/icon.svg" width="96" height="96" alt="dsh-custom-js icon">
+</p>
 
-<p align="center"><strong>Custom JavaScript and TypeScript userscripts for DeepSeek Harness.</strong></p>
-
+<h1 align="center">dsh-custom-js</h1>
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-custom-js"><img src="https://img.shields.io/npm/v/dsh-custom-js.svg" alt="npm version"></a>
   <a href="https://www.npmjs.com/package/dsh-custom-js"><img src="https://img.shields.io/npm/dm/dsh-custom-js.svg" alt="npm downloads"></a>
@@ -36,7 +37,7 @@ dsh plugin --profile web add dsh-custom-js
 
 Restart DSH after the first installation. Then open **Settings → General → Custom JavaScript / TypeScript**.
 
-Current package compatibility: **DSH 0.1.7-rc.2**, using a profile based on the `web` template.
+Current package compatibility: **DSH `>=0.2.0-rc.1 <0.3.0-0`**, covering `0.2.0-rc.1` and later `0.2.x` prerelease and stable versions, using a profile based on the `web` template.
 
 ## Update
 
@@ -251,9 +252,10 @@ Verified automatically:
 - Production Host and Client builds
 - npm package content inspection with `npm pack --dry-run`
 
-Manually verified on **Windows 11 with DSH 0.1.7-rc.2**:
+Manually verified on **Windows 11 with DSH 0.2.0-rc.1**:
 
-- Installation from the packed `.tgz` into an isolated `web` profile
+- Installation from the packed `.tgz` into an isolated `web` profile without a compatibility exemption
+- Plugin inventory recognition of the `custom-js` component and its Host/Client exports
 - DSH startup plus manifest, TypeScript create/compile/serve, disable, and delete smoke checks
 - Script creation and editing
 - Hot reload
@@ -264,7 +266,7 @@ Not currently verified:
 
 - macOS
 - Linux desktop folder opening
-- DSH versions other than `0.1.7-rc.2`
+- Future `0.2.x` builds not yet published; the declared peer range admits them without covering DSH `0.3.x`
 
 ## Development
 

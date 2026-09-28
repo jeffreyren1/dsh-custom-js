@@ -15,7 +15,7 @@ Requirements:
 
 - Node.js `^22.19.0` or `>=24.0.0`
 - pnpm 10
-- DeepSeek Harness `0.1.7-rc.2` for integration testing
+- DeepSeek Harness `0.2.0-rc.1` or a later `0.2.x` release for integration testing
 
 ```bash
 pnpm install

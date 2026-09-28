@@ -11,14 +11,14 @@ body:
     id: plugin-version
     attributes:
       label: dsh-custom-js version
-      placeholder: 0.2.0
+      placeholder: 0.4.0
     validations:
       required: true
   - type: input
     id: dsh-version
     attributes:
       label: DeepSeek Harness version
-      placeholder: 0.1.7-rc.2
+      placeholder: 0.2.0-rc.1
     validations:
       required: true
   - type: input

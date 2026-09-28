@@ -1,5 +1,5 @@
 export const PLUGIN_ID = 'dsh-custom-js'
-export const PLUGIN_VERSION = '0.3.2'
+export const PLUGIN_VERSION = '0.4.0'
 export const API_ROOT = '/api/custom-js'
 export const RUNTIME_STATUS_EVENT = `${PLUGIN_ID}:runtime-status`
 

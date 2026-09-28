@@ -1,4 +1,8 @@
-# dsh-custom-js
+<p align="center">
+  <img src="./assets/icon.svg" width="96" height="96" alt="dsh-custom-js icon">
+</p>
+
+<h1 align="center">dsh-custom-js</h1>
 
 <p align="center"><strong>为 DeepSeek Harness 加载和管理自己的 JavaScript / TypeScript 用户脚本。</strong></p>
 
@@ -36,7 +40,7 @@ dsh plugin --profile web add dsh-custom-js
 
 首次安装后重启 DSH，然后打开 **设置 → 通用设置 → 自定义 JavaScript / TypeScript**。
 
-当前包声明兼容 **DSH 0.1.7-rc.2**，适用于基于 `web` 模板的 profile。
+当前包声明兼容 **DSH `>=0.2.0-rc.1 <0.3.0-0`**，覆盖 `0.2.0-rc.1` 及后续 `0.2.x` 预发布和正式版本，适用于基于 `web` 模板的 profile。
 
 ## 更新
 
@@ -251,9 +255,10 @@ Client 入口需要在 Cordis `inject` 中包含 `locale`，并在 `apply(ctx)` 
 - Host 与 Client 的生产构建
 - 使用 `npm pack --dry-run` 检查 npm 发布包内容
 
-已在 **Windows 11 + DSH 0.1.7-rc.2** 环境中手动验证：
+已在 **Windows 11 + DSH 0.2.0-rc.1** 环境中手动验证：
 
-- 将打包后的 `.tgz` 安装到隔离的 `web` profile
+- 无需兼容性豁免即可将 `.tgz` 安装到隔离的 `web` profile
+- 插件清单能识别 `custom-js` 组件及其 Host/Client 导出
 - DSH 启动以及 manifest、TypeScript 创建/编译/提供、禁用和删除烟雾检查
 - 创建和编辑脚本
 - 自动重新加载
@@ -264,7 +269,7 @@ Client 入口需要在 Cordis `inject` 中包含 `locale`，并在 `apply(ctx)` 
 
 - macOS
 - Linux 桌面环境下打开文件夹
-- `0.1.7-rc.2` 之外的 DSH 版本
+- 尚未发布的未来 `0.2.x` 构建；声明的 peer range 会接受它们，但不会接受 DSH `0.3.x`
 
 ## 开发
 

@@ -23,7 +23,7 @@ function entry(name: string, order: number, revision = 'r1', overrides: Partial<
 function manifest(scripts: ScriptManifestEntry[], revision = scripts.map((item) => item.revision).join('-')): CustomJsManifest {
   return {
     plugin: 'dsh-custom-js',
-    version: '0.3.2',
+    version: '0.4.0',
     enabled: true,
     autoReload: true,
     devLogs: false,
