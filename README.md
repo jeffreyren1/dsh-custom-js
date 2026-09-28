@@ -76,7 +76,7 @@ Use userscripts to customize the DSH Web GUI, add shortcuts and helper controls,
 
 Find or replace code without leaving the DSH Settings page.
 
-![Find and replace code in the dsh-custom-js editor](./assets/screenshot-3.png)
+![Find and replace code in the dsh-custom-js editor](./assets/screenshot-4.png)
 
 ### Build new DSH features with your own script
 
