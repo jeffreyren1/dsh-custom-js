@@ -1,6 +1,6 @@
 {
   "name": "dsh-custom-js",
-  "version": "0.2.0",
+  "version": "0.3.2",
   "description": "Load, edit, manage and hot-reload trusted JavaScript and TypeScript userscripts in DeepSeek Harness.",
   "type": "module",
   "license": "MIT",
@@ -20,7 +20,10 @@
     "custom-js",
     "userscript",
     "javascript",
-    "typescript"
+    "typescript",
+    "code-editor",
+    "syntax-highlighting",
+    "hot-reload"
   ],
   "publishConfig": {
     "access": "public"
@@ -57,8 +60,8 @@
     "catalog": {
       "category": "ui",
       "summary": {
-        "en": "Load, edit, manage, and hot-reload trusted JavaScript and TypeScript userscripts in DeepSeek Harness.",
-        "zh": "在 DeepSeek Harness 中加载、编辑、管理和热重载可信的 JavaScript / TypeScript 用户脚本。"
+        "en": "Custom JS: Load, edit, manage, and hot-reload trusted JavaScript and TypeScript userscripts in DeepSeek Harness.",
+        "zh": "Custom JS: 在 DeepSeek Harness 中加载、编辑、管理和热重载可信的 JavaScript / TypeScript 用户脚本。"
       },
       "capabilities": [
         "fs",
@@ -110,9 +113,11 @@
     "CONTRIBUTING.md",
     "SECURITY.md",
     "screenshots.json",
-    "assets/screenshot.png",
+    "assets/screenshot-1.png",
     "assets/screenshot-2.png",
     "assets/screenshot-3.png",
+    "assets/screenshot-4.png",
+    "assets/social-preview.png",
     "LICENSE"
   ],
   "scripts": {
@@ -140,12 +145,18 @@
     "react": "^18.2.0"
   },
   "devDependencies": {
+    "@codemirror/commands": "^6.11.1",
+    "@codemirror/lang-javascript": "^6.2.5",
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.13",
     "@deepseek-ai/cordis": "~4.0.4",
     "@deepseek-ai/dsh-client-locale": "0.1.7-rc.2",
     "@deepseek-ai/dsh-client-ui-settings": "0.1.7-rc.2",
     "@deepseek-ai/dsh-client-ui-settings-general": "0.1.7-rc.2",
     "@deepseek-ai/dsh-client-ui-slots": "0.1.7-rc.2",
     "@deepseek-ai/dsh-host-webserver": "0.1.7-rc.2",
+    "@lezer/highlight": "^1.2.4",
     "@types/node": "^22.20.0",
     "@types/react": "~18.3.1",
     "happy-dom": "^17.6.3",

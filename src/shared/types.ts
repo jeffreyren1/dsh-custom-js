@@ -1,6 +1,7 @@
 export const PLUGIN_ID = 'dsh-custom-js'
-export const PLUGIN_VERSION = '0.2.0'
+export const PLUGIN_VERSION = '0.3.2'
 export const API_ROOT = '/api/custom-js'
+export const RUNTIME_STATUS_EVENT = `${PLUGIN_ID}:runtime-status`
 
 export type ScriptKind = 'javascript' | 'typescript'
 export type ScriptPhase = 'compile' | 'load' | 'initialize' | 'runtime' | 'cleanup'
@@ -61,6 +62,7 @@ export interface RuntimeScriptState {
 export interface DshCustomJsApi {
   readonly version: string
   readonly scripts: readonly RuntimeScriptState[]
+  sync(): Promise<void>
   reload(name?: string): Promise<void>
   getStatus(name: string): RuntimeScriptState | undefined
 }

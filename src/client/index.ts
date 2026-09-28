@@ -8,6 +8,7 @@ import {
   API_ROOT,
   PLUGIN_ID,
   PLUGIN_VERSION,
+  RUNTIME_STATUS_EVENT,
   type CustomJsManifest,
   type DshCustomJsApi,
   type RuntimeScriptState,
@@ -99,6 +100,7 @@ export class ClientScriptManager {
       get scripts() {
         return owner.snapshot()
       },
+      sync: async () => await owner.sync(),
       reload: async (name?: string) => await owner.reload(name),
       getStatus: (name: string) => owner.states.get(name),
     }
@@ -133,6 +135,10 @@ export class ClientScriptManager {
     } catch (error) {
       this.logger.warn(`[${PLUGIN_ID}] EventSource unavailable; use window.dshCustomJs.reload()`, error)
     }
+  }
+
+  async sync(): Promise<void> {
+    return await this.enqueue(async () => await this.synchronize())
   }
 
   async reload(name?: string): Promise<void> {
@@ -191,10 +197,17 @@ export class ClientScriptManager {
     }
   }
 
+  private setRuntimeState(state: RuntimeScriptState): void {
+    this.states.set(state.name, state)
+    this.targetWindow.dispatchEvent(new CustomEvent<RuntimeScriptState>(RUNTIME_STATUS_EVENT, {
+      detail: state,
+    }))
+  }
+
   private recordUnavailable(entry: ScriptManifestEntry): void {
     if (entry.enabled && entry.ready && entry.url !== undefined) return
     const status = entry.error?.phase === 'compile' ? 'compile-error' : 'disabled'
-    this.states.set(entry.name, {
+    this.setRuntimeState({
       name: entry.name,
       kind: entry.kind,
       order: entry.order,
@@ -212,7 +225,7 @@ export class ClientScriptManager {
     const url = new URL(entry.url!, this.targetWindow.location.href)
     if (bustCache) url.searchParams.set('_reload', String(this.now()))
     const publicUrl = `${url.pathname}${url.search}`
-    this.states.set(entry.name, {
+    this.setRuntimeState({
       name: entry.name,
       kind: entry.kind,
       order: entry.order,
@@ -226,7 +239,7 @@ export class ClientScriptManager {
       module = await this.importModule(publicUrl)
     } catch (error) {
       const detail = errorInfo('load', error)
-      this.states.set(entry.name, {
+      this.setRuntimeState({
         name: entry.name,
         kind: entry.kind,
         order: entry.order,
@@ -255,7 +268,7 @@ export class ClientScriptManager {
       const returned = init === undefined ? undefined : await init(context)
       if (typeof returned === 'function' && !cleanups.includes(returned)) cleanups.unshift(returned)
       this.loaded.set(entry.name, { entry, cleanups })
-      this.states.set(entry.name, {
+      this.setRuntimeState({
         name: entry.name,
         kind: entry.kind,
         order: entry.order,
@@ -268,7 +281,7 @@ export class ClientScriptManager {
     } catch (error) {
       await this.runCleanups(entry.name, cleanups)
       const detail = errorInfo('initialize', error)
-      this.states.set(entry.name, {
+      this.setRuntimeState({
         name: entry.name,
         kind: entry.kind,
         order: entry.order,
@@ -286,7 +299,7 @@ export class ClientScriptManager {
     if (loaded === undefined) return
     this.loaded.delete(name)
     await this.runCleanups(name, loaded.cleanups)
-    this.states.set(name, {
+    this.setRuntimeState({
       name,
       kind: loaded.entry.kind,
       order: loaded.entry.order,
@@ -305,7 +318,7 @@ export class ClientScriptManager {
         const detail = errorInfo('cleanup', error)
         this.logger.error(`[${PLUGIN_ID}] cleanup failed for ${name}: ${detail.message}`, error)
         const state = this.states.get(name)
-        if (state !== undefined) this.states.set(name, { ...state, status: 'error', error: detail })
+        if (state !== undefined) this.setRuntimeState({ ...state, status: 'error', error: detail })
       }
     }
   }
@@ -345,7 +358,7 @@ export class ClientScriptManager {
     const current = this.states.get(name)
     if (current === undefined) return
     const detail = errorInfo('runtime', error)
-    this.states.set(name, { ...current, status: 'error', error: detail })
+    this.setRuntimeState({ ...current, status: 'error', error: detail })
     this.logger.error(`[${PLUGIN_ID}] runtime error in ${name}: ${detail.message}`, error)
   }
 

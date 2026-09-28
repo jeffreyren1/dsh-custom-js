@@ -5,7 +5,7 @@ import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { apply } from '../src/index.js'
+import { apply, directoryOpenCommand } from '../src/index.js'
 import { HostScriptManager } from '../src/runtime/script-manager.js'
 
 interface RegisteredRoute {
@@ -127,6 +127,22 @@ afterEach(async () => {
 })
 
 describe('Host HTTP routes', () => {
+  it('builds platform folder-opening commands without shell interpolation', () => {
+    const windowsDirectory = 'C:\\Users\\Test & Data\\.dsh\\custom-js'
+    expect(directoryOpenCommand(windowsDirectory, 'win32', 'C:\\Windows')).toEqual({
+      command: 'C:\\Windows\\explorer.exe',
+      args: [windowsDirectory],
+    })
+    expect(directoryOpenCommand('/Users/test/.dsh/custom-js', 'darwin')).toEqual({
+      command: 'open',
+      args: ['/Users/test/.dsh/custom-js'],
+    })
+    expect(directoryOpenCommand('/home/test/.dsh/custom-js', 'linux')).toEqual({
+      command: 'xdg-open',
+      args: ['/home/test/.dsh/custom-js'],
+    })
+  })
+
   it('fails closed when the connection fence is absent, broken, or rejects a request', async () => {
     const absent = await createHarness(null)
     const absentResponse = await fetch(`${absent.origin}/api/custom-js/manifest`)
@@ -209,6 +225,20 @@ describe('Host HTTP routes', () => {
     const duplicateText = await duplicateResponse.text()
     expect(JSON.parse(duplicateText)).toMatchObject({ ok: false, error: 'already-exists' })
     expect(duplicateText).not.toContain(harness.root)
+
+    const disabledImportResponse = await postJson(harness, 'create', {
+      name: 'imported.js',
+      content: 'window.imported = true\n',
+      enabled: false,
+    })
+    expect(disabledImportResponse.status).toBe(201)
+    expect(await body(disabledImportResponse)).toMatchObject({ entry: { enabled: false } })
+    expect((await fetch(`${harness.origin}/api/custom-js/scripts/imported.js`)).status).toBe(404)
+    expect((await fetch(`${harness.origin}/api/custom-js/manage/read?name=imported.js`)).status).toBe(200)
+
+    const unsafeOpenResponse = await postJson(harness, 'open', { name: 'managed.js' })
+    expect(unsafeOpenResponse.status).toBe(404)
+    expect(await body(unsafeOpenResponse)).toMatchObject({ ok: false, error: 'not-found' })
 
     const missingResponse = await postJson(harness, 'delete', { name: 'missing.js' })
     expect(missingResponse.status).toBe(404)

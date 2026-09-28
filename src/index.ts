@@ -85,14 +85,37 @@ async function readJsonBody(req: IncomingMessage): Promise<Record<string, unknow
   }
 }
 
-function openFileWithSystem(filePath: string): void {
-  const [command, args] = process.platform === 'win32'
-    ? ['explorer.exe', [filePath]]
-    : process.platform === 'darwin'
-      ? ['open', [filePath]]
-      : ['xdg-open', [filePath]]
-  const child = spawn(command, args, { detached: true, stdio: 'ignore' })
-  child.on('error', () => undefined)
+export interface DirectoryOpenCommand {
+  readonly command: string
+  readonly args: readonly string[]
+}
+
+export function directoryOpenCommand(
+  directory: string,
+  platform: NodeJS.Platform = process.platform,
+  windowsDirectory = process.env.SystemRoot ?? process.env.WINDIR ?? 'C:\\Windows',
+): DirectoryOpenCommand {
+  if (platform === 'win32') {
+    return {
+      command: path.win32.join(windowsDirectory, 'explorer.exe'),
+      args: [directory],
+    }
+  }
+  if (platform === 'darwin') return { command: 'open', args: [directory] }
+  return { command: 'xdg-open', args: [directory] }
+}
+
+async function openDirectoryWithSystem(directory: string): Promise<void> {
+  const { command, args } = directoryOpenCommand(directory)
+  const child = spawn(command, [...args], {
+    detached: false,
+    stdio: 'ignore',
+    windowsHide: false,
+  })
+  await new Promise<void>((resolve, reject) => {
+    child.once('spawn', resolve)
+    child.once('error', reject)
+  })
   child.unref()
 }
 
@@ -270,6 +293,16 @@ export function apply(ctx: Context, config: Config = {}): void {
         badRequest(res, 'bad-body-or-too-large')
         return
       }
+      if (operation === '/open-directory') {
+        try {
+          await openDirectoryWithSystem(directory)
+          json(res, 200, { ok: true })
+        } catch (error) {
+          ctx.logger.error(`[${PLUGIN_ID}] failed to open script directory`, error)
+          json(res, 500, { ok: false, error: 'open-directory-failed' })
+        }
+        return
+      }
       const name = typeof body.name === 'string' ? body.name : ''
       if (!isScriptName(name)) {
         badRequest(res, 'bad-name')
@@ -294,6 +327,7 @@ export function apply(ctx: Context, config: Config = {}): void {
           const editable = await manager.createScript(
             name,
             typeof body.content === 'string' ? body.content : '',
+            typeof body.enabled === 'boolean' ? body.enabled : true,
           )
           json(res, 201, { ok: true, ...editable })
           return
@@ -309,16 +343,6 @@ export function apply(ctx: Context, config: Config = {}): void {
         }
         if (operation === '/delete') {
           await manager.deleteScript(name)
-          json(res, 200, { ok: true, name })
-          return
-        }
-        if (operation === '/open') {
-          const editable = await manager.editable(name)
-          if (editable === undefined) {
-            json(res, 404, { ok: false, error: 'not-found' })
-            return
-          }
-          openFileWithSystem(path.join(directory, name))
           json(res, 200, { ok: true, name })
           return
         }

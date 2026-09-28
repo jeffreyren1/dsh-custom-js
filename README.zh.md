@@ -12,11 +12,15 @@
 
 <p align="center"><a href="README.md">English</a> | <strong>中文</strong></p>
 
-![dsh-custom-js 脚本管理器](./assets/screenshot.png)
+![dsh-custom-js 宣传图](./assets/social-preview.png)
 
 `dsh-custom-js` 会把可信的 `.js`、`.mjs` 和 `.ts` 用户脚本加载到 DeepSeek Harness Web GUI 中。插件提供内置脚本管理器、自动重新加载、逐脚本启用/禁用、生命周期 cleanup、TypeScript 转译、运行状态，以及基于 DSH 原生 locale 服务的中英文界面。
 
 插件保持通用，不内置 Settings 窗口形态、Sidebar 按钮、快捷键或页面行为修改。这些具体功能由你自己的用户脚本实现。
+
+|英文版|中文版|
+|---|---|
+|![400](./assets/screenshot-1.png)|![400](./assets/screenshot-2.png)|
 
 ## 安装
 
@@ -68,11 +72,11 @@ console.log('Hello from dsh-custom-js')
 
 ## 更多截图
 
-### 内置编辑器中的查找
+### 内置编辑器中的查找与替换
 
-无需离开 DSH 设置页面，即可查找代码。
+无需离开 DSH 设置页面，即可查找或替换代码。
 
-![在 dsh-custom-js 编辑器中查找代码](./assets/screenshot-2.png)
+![在 dsh-custom-js 编辑器中查找与替换代码](./assets/screenshot-4.png)
 
 ### 使用自己的脚本扩展 DSH 功能
 
@@ -83,9 +87,11 @@ console.log('Hello from dsh-custom-js')
 ## 功能
 
 - JavaScript、MJS、TypeScript 用户脚本
-- 内置脚本编辑器
-- `Ctrl/Cmd+S`、Tab 缩进、查找、代码大纲跳转
-- 导入、导出、删除、启用/禁用、手动重新加载
+- 内置 CodeMirror 编辑器，支持 JavaScript / TypeScript 语法高亮、行号、括号匹配和编辑历史
+- `Ctrl/Cmd+S`、Tab 缩进、查找与替换、代码大纲跳转
+- 安全优先的导入：新导入脚本在检查并手动启用前保持禁用
+- 导出、删除、逐脚本启用/禁用，以及运行错误后的上下文重试
+- 复制脚本目录路径和安全地打开文件夹
 - 文件 watcher 与低频轮询，兼容外部编辑器保存方式
 - TypeScript ES2022 Module 转译与编译错误定位
 - `default` / `apply` / `init` 生命周期与 cleanup
@@ -138,9 +144,9 @@ custom-js/
 
 打开 **设置 → 通用设置 → 自定义 JavaScript / TypeScript**。
 
-管理器提供脚本选择、JS/TS 类型和文件大小信息、新建脚本、使用系统默认程序打开文件、导入导出、删除确认、内置编辑器、查找、代码大纲跳转、逐脚本启用/禁用、手动重新加载、TypeScript 编译错误、运行状态以及 revision 冲突保护。
+管理器提供脚本选择、JS/TS 类型和文件大小信息、直接显示的新建/导入/导出/删除操作、安全打开脚本目录、限时删除确认、CodeMirror 语法高亮编辑器、查找与替换、代码大纲跳转、逐脚本启用/禁用、错误后的上下文重试、TypeScript 编译错误、运行状态以及 revision 冲突保护。
 
-编辑器使用显式保存，避免输入尚未完成的 JavaScript 时立即执行。外部文件变化仍会触发重新加载；如果当前编辑器存在未保存内容，会保留本地编辑，直到保存或放弃更改。
+编辑器使用显式保存，避免输入尚未完成的 JavaScript 时立即执行。保存启用中的脚本时，按钮显示“保存并应用”，而且即使关闭外部文件自动重载，新版本也会立即生效；保存禁用脚本则只写入文件。新导入脚本会以原子方式创建为禁用状态，便于在启用前检查代码。已保存脚本运行失败时才会显示“重试”；底层 `window.dshCustomJs.reload()` API 仍保留给高级用户。外部文件变化继续遵循 `autoReload` 设置。如果当前编辑器存在未保存内容，会保留本地编辑，直到保存或放弃更改。
 
 逐脚本开关保存在脚本目录中的 `.dsh-custom-js.json`，DSH 重启后继续生效。
 
@@ -200,6 +206,7 @@ Host 使用官方 `typescript` 编译器把 `.ts` 转译为浏览器 ES2022 Modu
 window.dshCustomJs.version
 window.dshCustomJs.scripts
 window.dshCustomJs.getStatus('sidebar.ts')
+await window.dshCustomJs.sync()
 await window.dshCustomJs.reload('sidebar.ts')
 await window.dshCustomJs.reload()
 ```
@@ -217,10 +224,10 @@ POST /api/custom-js/manage/write
 POST /api/custom-js/manage/create
 POST /api/custom-js/manage/toggle
 POST /api/custom-js/manage/delete
-POST /api/custom-js/manage/open
+POST /api/custom-js/manage/open-directory
 ```
 
-管理接口和脚本接口共用 DSH Connection request fence。脚本名称必须是单层 `.js`、`.mjs` 或 `.ts` 文件名；目录穿越和符号链接会被拒绝。编辑请求体上限为 2 MiB，写入使用 revision 前置条件。
+管理接口和脚本接口共用 DSH Connection request fence。脚本名称必须是单层 `.js`、`.mjs` 或 `.ts` 文件名；目录穿越和符号链接会被拒绝。编辑请求体上限为 2 MiB，写入使用 revision 前置条件。`create` 接受 `enabled` 布尔值，使导入文件可以在第一次 manifest 更新前就以禁用状态落盘。`open-directory` 只会打开固定脚本目录，绝不会调用操作系统对脚本文件的默认处理程序。
 
 ## 中英文界面
 
@@ -256,7 +263,7 @@ Client 入口需要在 Cordis `inject` 中包含 `locale`，并在 `apply(ctx)` 
 目前尚未验证：
 
 - macOS
-- Linux 桌面环境下使用默认程序打开文件
+- Linux 桌面环境下打开文件夹
 - `0.1.7-rc.2` 之外的 DSH 版本
 
 ## 开发
@@ -301,7 +308,7 @@ npm publish
 
 ## 链接
 
-- GitHub: https://github.com/jeffreyren1/dsh-custom-js
-- Issues: https://github.com/jeffreyren1/dsh-custom-js/issues
-- npm: https://www.npmjs.com/package/dsh-custom-js
-- DeepSeek Harness: https://github.com/deepseek-ai/deepseek-harness
+- GitHub: <https://github.com/jeffreyren1/dsh-custom-js>
+- Issues: <https://github.com/jeffreyren1/dsh-custom-js/issues>
+- npm: <https://www.npmjs.com/package/dsh-custom-js>
+- DeepSeek Harness: <https://github.com/deepseek-ai/deepseek-harness>

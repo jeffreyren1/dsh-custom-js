@@ -8,7 +8,7 @@ Security fixes are provided for the latest published version of `dsh-custom-js`.
 
 Please do not open a public issue for a suspected vulnerability. Use GitHub's **Security → Report a vulnerability** flow to submit a private security advisory:
 
-https://github.com/jeffreyren1/dsh-custom-js/security/advisories/new
+<https://github.com/jeffreyren1/dsh-custom-js/security/advisories/new>
 
 Include the affected version, impact, reproduction steps or proof of concept, and any suggested mitigation. Remove unrelated secrets and private data. You should receive an initial response within seven days.
 

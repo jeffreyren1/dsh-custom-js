@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ClientScriptManager } from '../src/client/index.js'
 import { compileTypeScript } from '../src/runtime/compiler.js'
-import type { CustomJsManifest, ScriptManifestEntry, UserScriptModule } from '../src/shared/types.js'
+import { RUNTIME_STATUS_EVENT, type CustomJsManifest, type RuntimeScriptState, type ScriptManifestEntry, type UserScriptModule } from '../src/shared/types.js'
 
 function entry(name: string, order: number, revision = 'r1', overrides: Partial<ScriptManifestEntry> = {}): ScriptManifestEntry {
   return {
@@ -23,7 +23,7 @@ function entry(name: string, order: number, revision = 'r1', overrides: Partial<
 function manifest(scripts: ScriptManifestEntry[], revision = scripts.map((item) => item.revision).join('-')): CustomJsManifest {
   return {
     plugin: 'dsh-custom-js',
-    version: '0.2.0',
+    version: '0.3.2',
     enabled: true,
     autoReload: true,
     devLogs: false,
@@ -76,17 +76,26 @@ describe('ClientScriptManager', () => {
     expect(events).toEqual(['base:init', 'sidebar:init'])
     expect(window.dshCustomJs?.scripts.map((state) => state.status)).toEqual(['loaded', 'loaded'])
 
+    await window.dshCustomJs?.sync()
+    expect(events).toEqual(['base:init', 'sidebar:init'])
+
     current = manifest([entry('base.js', 0), entry('sidebar.ts', 1, 'r2')], 'next')
-    await window.dshCustomJs?.reload('sidebar.ts')
+    await window.dshCustomJs?.sync()
     expect(events).toEqual(['base:init', 'sidebar:init', 'sidebar:cleanup', 'sidebar:init'])
+
+    await window.dshCustomJs?.reload('sidebar.ts')
+    expect(events).toEqual(['base:init', 'sidebar:init', 'sidebar:cleanup', 'sidebar:init', 'sidebar:cleanup', 'sidebar:init'])
 
     await manager.dispose()
     expect(events.slice(-2)).toEqual(['sidebar:cleanup', 'base:cleanup'])
     expect(window.dshCustomJs).toBeUndefined()
   })
 
-  it('isolates a failed module and continues loading later scripts', async () => {
+  it('isolates a failed module, emits its runtime state, and continues loading later scripts', async () => {
     const events: string[] = []
+    const states: RuntimeScriptState[] = []
+    const onState = (event: Event) => states.push((event as CustomEvent<RuntimeScriptState>).detail)
+    window.addEventListener(RUNTIME_STATUS_EVENT, onState)
     const manager = new ClientScriptManager({
       fetchManifest: async () => manifest([entry('bad.js', 0), entry('good.mjs', 1)]),
       importModule: async (url) => {
@@ -103,6 +112,8 @@ describe('ClientScriptManager', () => {
     expect(events).toEqual(['good'])
     expect(manager.api.getStatus('bad.js')?.error?.message).toContain('Unexpected token')
     expect(manager.api.getStatus('good.mjs')?.status).toBe('loaded')
+    expect(states.some((state) => state.name === 'bad.js' && state.status === 'error')).toBe(true)
+    window.removeEventListener(RUNTIME_STATUS_EVENT, onState)
   })
 
   it('allows ordinary browser code to use DOM, localStorage, and fetch', async () => {

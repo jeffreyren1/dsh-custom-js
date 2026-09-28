@@ -137,6 +137,33 @@ describe('HostScriptManager', () => {
     restarted.dispose()
   })
 
+  it('creates imported scripts disabled before their first manifest and persists that state', async () => {
+    const directory = await temporaryDirectory()
+    const options = {
+      directory,
+      enabled: true,
+      autoReload: true,
+      scripts: [] as string[],
+      scriptStates: [] as { name: string; enabled: boolean }[],
+      devLogs: false,
+      logger,
+    }
+    const manager = new HostScriptManager(options)
+    await manager.start()
+
+    const imported = await manager.createScript('imported.js', 'window.imported = true\n', false)
+    expect(imported.entry.enabled).toBe(false)
+    expect(await manager.script('imported.js')).toBeUndefined()
+    expect((await manager.editable('imported.js'))?.content).toContain('window.imported')
+    manager.dispose()
+
+    const restarted = new HostScriptManager(options)
+    await restarted.start()
+    expect((await restarted.manifest()).scripts[0]?.enabled).toBe(false)
+    expect(await restarted.script('imported.js')).toBeUndefined()
+    restarted.dispose()
+  })
+
   it('recreates the same manifest and compiled source after a Host restart', async () => {
     const directory = await temporaryDirectory()
     await writeFile(path.join(directory, 'restart.ts'), `export const restarted: boolean = true\n`)

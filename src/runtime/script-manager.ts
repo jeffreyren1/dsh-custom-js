@@ -317,10 +317,26 @@ export class HostScriptManager {
     return (await this.editable(name))!
   }
 
-  async createScript(name: string, content = ''): Promise<EditableScript> {
+  async createScript(name: string, content = '', enabled = true): Promise<EditableScript> {
     const fullPath = await this.safeEditablePath(name, false)
     await mkdir(this.directory, { recursive: true })
-    await writeFile(fullPath, content, { encoding: 'utf8', flag: 'wx' })
+    const previousState = this.stateOverrides.get(name)
+    if (!enabled) {
+      this.stateOverrides.set(name, false)
+      await this.persistEditorState()
+    }
+    try {
+      await writeFile(fullPath, content, { encoding: 'utf8', flag: 'wx' })
+    } catch (error) {
+      if (!enabled) {
+        if (previousState === undefined) this.stateOverrides.delete(name)
+        else this.stateOverrides.set(name, previousState)
+        await this.persistEditorState().catch((persistError) => {
+          this.options.logger.error(`[${PLUGIN_ID}] failed to roll back script state`, persistError)
+        })
+      }
+      throw error
+    }
     await this.refresh(new Set([name]))
     return (await this.editable(name))!
   }

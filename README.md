@@ -12,11 +12,15 @@
 
 <p align="center"><strong>English</strong> | <a href="README.zh.md">中文</a></p>
 
-![dsh-custom-js script manager](./assets/screenshot.png)
+![dsh-custom-js Social Preview](./assets/social-preview.png)
 
 `dsh-custom-js` loads trusted `.js`, `.mjs`, and `.ts` userscripts into the DeepSeek Harness Web GUI. It includes a built-in script manager, hot reload, per-script enable/disable controls, lifecycle cleanup, TypeScript transpilation, runtime status, and bilingual UI copy through the native DSH locale service.
 
 The plugin stays generic. UI changes such as custom Settings layouts, Sidebar buttons, shortcuts, or page behavior live in your own userscripts.
+
+|English Version|Chinese Version|
+|---|---|
+|![400](./assets/screenshot-1.png)|![400](./assets/screenshot-2.png)|
 
 ## Install
 
@@ -68,11 +72,11 @@ Use userscripts to customize the DSH Web GUI, add shortcuts and helper controls,
 
 ## More screenshots
 
-### Find in the built-in editor
+### Find and replace in the built-in editor
 
-Search for code without leaving the DSH Settings page.
+Find or replace code without leaving the DSH Settings page.
 
-![Find code in the dsh-custom-js editor](./assets/screenshot-2.png)
+![Find and replace code in the dsh-custom-js editor](./assets/screenshot-3.png)
 
 ### Build new DSH features with your own script
 
@@ -83,9 +87,11 @@ This outline view was implemented in a user-written JavaScript file and loaded t
 ## Features
 
 - JavaScript, MJS, and TypeScript userscripts
-- Built-in script editor
-- `Ctrl/Cmd+S`, Tab indentation, search, and code outline navigation
-- Import, export, delete, enable/disable, and manual reload
+- Built-in CodeMirror editor with JavaScript / TypeScript syntax highlighting, line numbers, bracket matching, and history
+- `Ctrl/Cmd+S`, Tab indentation, find and replace, and code outline navigation
+- Safe-by-default import: new imported scripts remain disabled until you review and enable them
+- Export, delete, per-script enable/disable, and contextual retry after runtime errors
+- Script-directory path copy and safe folder opening
 - File watcher plus low-frequency polling for reliable external-editor updates
 - TypeScript ES2022 Module transpilation with compile diagnostics
 - Managed `default` / `apply` / `init` lifecycle and cleanup
@@ -138,9 +144,9 @@ Only top-level `.js`, `.mjs`, and `.ts` files are scanned. Subdirectories and ot
 
 Open **Settings → General → Custom JavaScript / TypeScript**.
 
-The manager provides script selection, JS/TS type and size information, script creation, opening with the system default app, import/export, deletion confirmation, a built-in editor, search, code outline navigation, per-script enable/disable, manual reload, TypeScript compile diagnostics, runtime status, and revision conflict protection.
+The manager provides script selection, JS/TS type and size information, directly visible create/import/export/delete actions, safe script-directory opening, timed deletion confirmation, a syntax-highlighted CodeMirror editor, find and replace, code outline navigation, per-script enable/disable, contextual retry after errors, TypeScript compile diagnostics, runtime status, and revision conflict protection.
 
-The editor uses explicit saves so partially written JavaScript is not executed while you are typing. External file changes still trigger reload. If the editor has unsaved changes, the local edit is preserved until you save or discard it.
+The editor uses explicit saves so partially written JavaScript is not executed while you are typing. Saving an enabled script is labeled **Save and apply** and applies the new version immediately—even when automatic external-file reload is disabled. Saving a disabled script only writes the file. New imported scripts are created atomically in the disabled state so you can inspect their code before enabling them. If a saved script fails, a contextual **Retry** action appears; the low-level `window.dshCustomJs.reload()` API remains available for advanced use. External file changes still follow the `autoReload` setting. If the editor has unsaved changes, the local edit is preserved until you save or discard it.
 
 Per-script enable/disable state is stored in `.dsh-custom-js.json` inside the script directory and survives DSH restarts.
 
@@ -200,6 +206,7 @@ This is single-file transpilation. Run `tsc --noEmit` in the script's own projec
 window.dshCustomJs.version
 window.dshCustomJs.scripts
 window.dshCustomJs.getStatus('sidebar.ts')
+await window.dshCustomJs.sync()
 await window.dshCustomJs.reload('sidebar.ts')
 await window.dshCustomJs.reload()
 ```
@@ -217,10 +224,10 @@ POST /api/custom-js/manage/write
 POST /api/custom-js/manage/create
 POST /api/custom-js/manage/toggle
 POST /api/custom-js/manage/delete
-POST /api/custom-js/manage/open
+POST /api/custom-js/manage/open-directory
 ```
 
-The management routes share the DSH Connection request fence. Script names must be a single `.js`, `.mjs`, or `.ts` file name. Directory traversal and symbolic links are rejected. Edit request bodies are limited to 2 MiB and writes use revision preconditions.
+The management routes share the DSH Connection request fence. Script names must be a single `.js`, `.mjs`, or `.ts` file name. Directory traversal and symbolic links are rejected. Edit request bodies are limited to 2 MiB and writes use revision preconditions. `create` accepts an `enabled` boolean so imported files can be persisted disabled before their first manifest update. `open-directory` only opens the fixed script directory; it never invokes the operating system's default handler for a script file.
 
 ## Localization
 
@@ -256,7 +263,7 @@ Manually verified on **Windows 11 with DSH 0.1.7-rc.2**:
 Not currently verified:
 
 - macOS
-- Linux desktop file opening
+- Linux desktop folder opening
 - DSH versions other than `0.1.7-rc.2`
 
 ## Development
@@ -301,7 +308,7 @@ If the plugin is useful to you, starring the repository helps other DSH users di
 
 ## Links
 
-- GitHub: https://github.com/jeffreyren1/dsh-custom-js
-- Issues: https://github.com/jeffreyren1/dsh-custom-js/issues
-- npm: https://www.npmjs.com/package/dsh-custom-js
-- DeepSeek Harness: https://github.com/deepseek-ai/deepseek-harness
+- GitHub: <https://github.com/jeffreyren1/dsh-custom-js>
+- Issues: <https://github.com/jeffreyren1/dsh-custom-js/issues>
+- npm: <https://www.npmjs.com/package/dsh-custom-js>
+- DeepSeek Harness: <https://github.com/deepseek-ai/deepseek-harness>
